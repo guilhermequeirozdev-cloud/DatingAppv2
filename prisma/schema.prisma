@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  BUYER
+}
+
+enum WatchStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  COMPLETED
+  CANCELLED
+}
+
+enum EscrowStatus {
+  NONE
+  HOLDING
+  RELEASED
+  REFUNDED
+}
+
+enum DisputeStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  watches   Watch[]
+  orders    Order[]  @relation("buyerOrders")
+  sales     Order[]  @relation("sellerOrders")
+  messages  Message[]
+  createdAt DateTime @default(now())
+}
+
+model Watch {
+  id          String      @id @default(cuid())
+  brand       String
+  model       String
+  price       Int
+  condition   String
+  description String
+  images      String
+  status      WatchStatus
+  aiScore     Int?
+  aiVerdict   String?
+  aiNotes     String?
+  sellerId    String
+  seller      User        @relation(fields: [sellerId], references: [id])
+  createdAt   DateTime    @default(now())
+  orders      Order[]
+}
+
+model Order {
+  id           String       @id @default(cuid())
+  buyerId      String
+  sellerId     String
+  watchId      String
+  status       OrderStatus
+  escrowStatus EscrowStatus
+  trackingCode String?
+  buyer        User         @relation("buyerOrders", fields: [buyerId], references: [id])
+  seller       User         @relation("sellerOrders", fields: [sellerId], references: [id])
+  watch        Watch        @relation(fields: [watchId], references: [id])
+  messages     Message[]
+  disputes     Dispute[]
+  createdAt    DateTime     @default(now())
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  orderId   String
+  senderId  String
+  content   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  sender    User     @relation(fields: [senderId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Dispute {
+  id        String        @id @default(cuid())
+  orderId   String
+  reason    String
+  comment   String?
+  status    DisputeStatus
+  order     Order         @relation(fields: [orderId], references: [id])
+  createdAt DateTime      @default(now())
+}

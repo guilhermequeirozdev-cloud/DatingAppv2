@@ -1,0 +1,13 @@
+{
+  "name": "luxury-watch-marketplace",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/api & npm run dev -w apps/web",
+    "lint": "echo 'lint placeholder'",
+    "seed": "npx prisma db seed"
+  }
+}
