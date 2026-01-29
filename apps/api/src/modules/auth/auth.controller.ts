@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Role } from '@prisma/client';
 
@@ -19,5 +19,10 @@ export class AuthController {
   @Post('login')
   login(@Body() body: { email: string; password: string }) {
     return this.auth.login(body.email, body.password);
+  }
+
+  @Get('demo')
+  demo() {
+    return this.auth.demoUsers();
   }
 }

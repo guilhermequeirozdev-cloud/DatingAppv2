@@ -11,6 +11,9 @@ interface WatchItem {
   brand: string;
   model: string;
   status: string;
+  aiScore?: number;
+  aiVerdict?: string;
+  aiNotes?: string;
 }
 
 export default function AdminWatchesPage() {
@@ -44,7 +47,8 @@ export default function AdminWatchesPage() {
                 <p className="font-semibold">
                   {watch.brand} {watch.model}
                 </p>
-                <p className="text-sm text-text-muted">Status: {watch.status}</p>
+                <p className="text-sm text-text-muted">Score IA: {watch.aiScore ?? '--'} • {watch.aiVerdict}</p>
+                <p className="text-xs text-text-muted">{watch.aiNotes}</p>
               </div>
               <div className="flex gap-2">
                 <PrimaryButton onClick={() => approve(watch.id)}>Aprovar</PrimaryButton>
@@ -55,7 +59,11 @@ export default function AdminWatchesPage() {
             </div>
           </Card>
         ))}
-        {watches.length === 0 && <Card><p className="text-text-muted">Sem relógios pendentes.</p></Card>}
+        {watches.length === 0 && (
+          <Card>
+            <p className="text-text-muted">Sem relógios pendentes.</p>
+          </Card>
+        )}
       </div>
     </PageShell>
   );

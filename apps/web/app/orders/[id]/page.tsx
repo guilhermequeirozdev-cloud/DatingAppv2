@@ -16,12 +16,17 @@ interface OrderDetail {
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [reason, setReason] = useState('');
+  const [trackingStatus, setTrackingStatus] = useState<string>('');
 
-  useEffect(() => {
+  const loadOrder = () => {
     fetch(`${API_URL}/orders/${params.id}`)
       .then((res) => res.json())
       .then(setOrder)
       .catch(() => null);
+  };
+
+  useEffect(() => {
+    loadOrder();
   }, [params.id]);
 
   const confirmDelivery = async () => {
@@ -39,6 +44,13 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     setReason('');
   };
 
+  const track = async () => {
+    if (!order?.trackingCode) return;
+    const res = await fetch(`${API_URL}/shipping/track/${order.trackingCode}`);
+    const data = await res.json();
+    setTrackingStatus(data.status.join(' • '));
+  };
+
   return (
     <PageShell>
       <div className="grid gap-6 md:grid-cols-2">
@@ -47,9 +59,13 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
           <p className="mt-2 text-text-muted">Status: {order?.status}</p>
           <p className="text-text-muted">Escrow: {order?.escrowStatus}</p>
           <p className="mt-4 text-sm text-text-muted">Tracking: {order?.trackingCode || 'Aguardando envio'}</p>
-          <PrimaryButton className="mt-6" onClick={confirmDelivery}>
-            Confirmar recebimento
-          </PrimaryButton>
+          {trackingStatus && <p className="mt-2 text-xs text-text-muted">{trackingStatus}</p>}
+          <div className="mt-6 flex flex-col gap-3">
+            <PrimaryButton onClick={confirmDelivery}>Confirmar recebimento</PrimaryButton>
+            <button className="rounded-full border border-border-soft px-4 py-2 text-sm" onClick={track}>
+              Atualizar tracking
+            </button>
+          </div>
         </Card>
         <Card>
           <h2 className="text-lg font-semibold">Abrir disputa</h2>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageShell from '../../../../components/PageShell';
 import Card from '../../../../components/Card';
 import PrimaryButton from '../../../../components/PrimaryButton';
@@ -8,24 +8,46 @@ import { API_URL } from '../../../../lib/api';
 
 export default function NewWatchPage() {
   const [aiResult, setAiResult] = useState<{ score: number; verdict: string; notes: string } | null>(null);
+  const [sellerId, setSellerId] = useState('');
   const [form, setForm] = useState({
     brand: '',
     model: '',
     price: 0,
     condition: '',
     description: '',
-    images: '',
+    images: [] as string[],
   });
 
+  useEffect(() => {
+    fetch(`${API_URL}/auth/demo`)
+      .then((res) => res.json())
+      .then((users) => {
+        const seller = users.find((user: { role: string }) => user.role === 'SELLER');
+        if (seller) setSellerId(seller.id);
+      })
+      .catch(() => null);
+  }, []);
+
+  const uploadImage = async (file: File) => {
+    const data = new FormData();
+    data.append('file', file);
+    const res = await fetch(`${API_URL}/watches/upload`, {
+      method: 'POST',
+      body: data,
+    });
+    const response = await res.json();
+    setForm((prev) => ({ ...prev, images: [...prev.images, response.url] }));
+  };
+
   const submit = async () => {
+    if (!sellerId) return;
     const res = await fetch(`${API_URL}/watches`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form,
         price: Number(form.price),
-        images: form.images.split(',').map((item) => item.trim()),
-        sellerId: 'demo-seller',
+        sellerId,
       }),
     });
     const data = await res.json();
@@ -38,7 +60,7 @@ export default function NewWatchPage() {
         <Card>
           <h1 className="text-2xl font-semibold">Cadastrar relógio</h1>
           <div className="mt-6 grid gap-3">
-            {['brand', 'model', 'condition', 'description', 'images'].map((field) => (
+            {['brand', 'model', 'condition', 'description'].map((field) => (
               <input
                 key={field}
                 className="rounded-full border border-border-soft bg-bg-card px-4 py-2"
@@ -54,6 +76,17 @@ export default function NewWatchPage() {
               value={form.price}
               onChange={(event) => setForm({ ...form, price: Number(event.target.value) })}
             />
+            <input
+              className="rounded-full border border-border-soft bg-bg-card px-4 py-2"
+              type="file"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) uploadImage(file);
+              }}
+            />
+            {form.images.length > 0 && (
+              <p className="text-xs text-text-muted">{form.images.length} imagem(ns) anexada(s)</p>
+            )}
           </div>
           <PrimaryButton className="mt-6" onClick={submit}>
             Enviar para IA (mock)

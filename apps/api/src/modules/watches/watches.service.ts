@@ -6,12 +6,20 @@ import { WatchStatus } from '@prisma/client';
 export class WatchesService {
   constructor(private prisma: PrismaService) {}
 
-  list() {
-    return this.prisma.watch.findMany({ include: { seller: true } });
+  list(filters?: { status?: WatchStatus; sellerId?: string }) {
+    return this.prisma.watch.findMany({
+      where: {
+        status: filters?.status,
+        sellerId: filters?.sellerId,
+      },
+      include: { seller: true },
+    }).then((items) => items.map((item) => this.mapWatch(item)));
   }
 
   get(id: string) {
-    return this.prisma.watch.findUnique({ where: { id }, include: { seller: true } });
+    return this.prisma.watch
+      .findUnique({ where: { id }, include: { seller: true } })
+      .then((item) => (item ? this.mapWatch(item) : null));
   }
 
   async create(data: {
@@ -23,17 +31,21 @@ export class WatchesService {
     images: string[];
     sellerId: string;
   }) {
+    const ai = this.mockAi(data.images);
     const watch = await this.prisma.watch.create({
       data: {
         ...data,
         images: data.images.join(','),
         status: WatchStatus.PENDING,
+        aiScore: ai.score,
+        aiVerdict: ai.verdict,
+        aiNotes: ai.notes,
       },
     });
 
     return {
       watch,
-      ai: this.mockAi(data.images),
+      ai,
     };
   }
 
@@ -44,6 +56,13 @@ export class WatchesService {
       verdict: 'AUTENTICO',
       notes: 'Acabamento e logotipo consistentes',
       images,
+    };
+  }
+
+  private mapWatch(watch: { images: string }) {
+    return {
+      ...watch,
+      images: watch.images.split(',').map((item) => item.trim()),
     };
   }
 }

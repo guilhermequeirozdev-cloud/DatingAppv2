@@ -14,15 +14,41 @@ interface OrderItem {
   watch?: { brand: string; model: string };
 }
 
+interface WatchItem {
+  id: string;
+  brand: string;
+  model: string;
+  status: string;
+  aiScore?: number;
+}
+
 export default function SellerDashboard() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [watches, setWatches] = useState<WatchItem[]>([]);
+  const [sellerId, setSellerId] = useState('');
 
   useEffect(() => {
-    fetch(`${API_URL}/orders`)
+    fetch(`${API_URL}/auth/demo`)
+      .then((res) => res.json())
+      .then((users) => {
+        const seller = users.find((user: { role: string }) => user.role === 'SELLER');
+        if (seller) setSellerId(seller.id);
+      })
+      .catch(() => null);
+  }, []);
+
+  useEffect(() => {
+    if (!sellerId) return;
+    fetch(`${API_URL}/orders?sellerId=${sellerId}`)
       .then((res) => res.json())
       .then(setOrders)
       .catch(() => null);
-  }, []);
+
+    fetch(`${API_URL}/watches?sellerId=${sellerId}&status=PENDING`)
+      .then((res) => res.json())
+      .then(setWatches)
+      .catch(() => null);
+  }, [sellerId]);
 
   const generateShipping = async (orderId: string) => {
     const res = await fetch(`${API_URL}/shipping/create`, {
@@ -43,20 +69,40 @@ export default function SellerDashboard() {
         </Link>
       </div>
       <div className="mt-6 grid gap-4">
-        {orders.map((order) => (
-          <Card key={order.id}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-text-muted">Pedido {order.id}</p>
-                <p className="font-semibold">
-                  {order.watch?.brand} {order.watch?.model}
-                </p>
-                <p className="text-xs text-text-muted">Tracking: {order.trackingCode || 'Não gerado'}</p>
+        <Card>
+          <h2 className="text-lg font-semibold">Relógios em análise</h2>
+          <div className="mt-4 grid gap-3">
+            {watches.map((watch) => (
+              <div key={watch.id} className="flex items-center justify-between rounded-xl border border-border-soft bg-bg-card/60 px-4 py-3">
+                <div>
+                  <p className="font-semibold">
+                    {watch.brand} {watch.model}
+                  </p>
+                  <p className="text-xs text-text-muted">Score IA: {watch.aiScore ?? '--'}</p>
+                </div>
+                <span className="text-xs text-gold">{watch.status}</span>
               </div>
-              <PrimaryButton onClick={() => generateShipping(order.id)}>Gerar envio</PrimaryButton>
-            </div>
-          </Card>
-        ))}
+            ))}
+            {watches.length === 0 && <p className="text-sm text-text-muted">Nenhum relógio pendente.</p>}
+          </div>
+        </Card>
+        <Card>
+          <h2 className="text-lg font-semibold">Pedidos recebidos</h2>
+          <div className="mt-4 grid gap-3">
+            {orders.map((order) => (
+              <div key={order.id} className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-text-muted">Pedido {order.id}</p>
+                  <p className="font-semibold">
+                    {order.watch?.brand} {order.watch?.model}
+                  </p>
+                  <p className="text-xs text-text-muted">Tracking: {order.trackingCode || 'Não gerado'}</p>
+                </div>
+                <PrimaryButton onClick={() => generateShipping(order.id)}>Gerar envio</PrimaryButton>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
     </PageShell>
   );

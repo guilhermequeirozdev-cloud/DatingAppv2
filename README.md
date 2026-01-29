@@ -24,6 +24,22 @@ npm run dev
 - Seller: `seller@luxwatch.com` / `seller123`
 - Buyer: `buyer@luxwatch.com` / `buyer123`
 
+## Fluxos de demo
+
+### Simular Pix
+1. Abra um relógio e clique em **Comprar agora** para criar o pedido.
+2. Na tela `/checkout/[orderId]`, clique em **Simular pagamento Pix**.
+3. O pedido é atualizado para `PAID` e o escrow passa para `HOLDING`.
+
+### Simular envio (Correios mock)
+1. Entre no dashboard do seller (`/dashboard/seller`).
+2. Clique em **Gerar envio** para criar o código de rastreio.
+3. No pedido (`/orders/[id]`), clique em **Atualizar tracking** para ver status simulados.
+
+### Disputa
+1. No pedido (`/orders/[id]`), informe o motivo e clique em **Enviar disputa**.
+2. No painel admin (`/dashboard/admin/disputes`), selecione **Liberar** ou **Reembolsar**.
+
 ## Endpoints mock principais
 
 - POST `/payments/pix`

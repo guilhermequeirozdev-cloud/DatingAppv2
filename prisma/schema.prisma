@@ -61,6 +61,9 @@ model Watch {
   description String
   images      String
   status      WatchStatus
+  aiScore     Int?
+  aiVerdict   String?
+  aiNotes     String?
   sellerId    String
   seller      User        @relation(fields: [sellerId], references: [id])
   createdAt   DateTime    @default(now())

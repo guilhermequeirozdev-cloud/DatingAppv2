@@ -21,6 +21,9 @@ export interface Watch {
   images: string[];
   status: WatchStatus;
   sellerId: string;
+  aiScore?: number;
+  aiVerdict?: string;
+  aiNotes?: string;
 }
 
 export interface Order {

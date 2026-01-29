@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
@@ -6,8 +6,8 @@ export class OrdersController {
   constructor(private orders: OrdersService) {}
 
   @Get()
-  list() {
-    return this.orders.list();
+  list(@Query('sellerId') sellerId?: string, @Query('buyerId') buyerId?: string) {
+    return this.orders.list({ sellerId, buyerId });
   }
 
   @Get(':id')

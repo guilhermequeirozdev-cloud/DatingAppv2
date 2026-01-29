@@ -6,12 +6,20 @@ import { EscrowStatus, OrderStatus } from '@prisma/client';
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
-  list() {
-    return this.prisma.order.findMany({ include: { watch: true, buyer: true, seller: true } });
+  list(filters?: { sellerId?: string; buyerId?: string }) {
+    return this.prisma.order.findMany({
+      where: {
+        sellerId: filters?.sellerId,
+        buyerId: filters?.buyerId,
+      },
+      include: { watch: true, buyer: true, seller: true },
+    }).then((orders) => orders.map((order) => this.mapOrder(order)));
   }
 
   get(id: string) {
-    return this.prisma.order.findUnique({ where: { id }, include: { watch: true, buyer: true, seller: true, disputes: true } });
+    return this.prisma.order
+      .findUnique({ where: { id }, include: { watch: true, buyer: true, seller: true, disputes: true } })
+      .then((order) => (order ? this.mapOrder(order) : null));
   }
 
   create(data: { buyerId: string; sellerId: string; watchId: string }) {
@@ -43,5 +51,17 @@ export class OrdersService {
         status: 'OPEN',
       },
     });
+  }
+
+  private mapOrder(order: { watch?: { images: string } }) {
+    return {
+      ...order,
+      watch: order.watch
+        ? {
+            ...order.watch,
+            images: order.watch.images.split(',').map((item) => item.trim()),
+          }
+        : undefined,
+    };
   }
 }

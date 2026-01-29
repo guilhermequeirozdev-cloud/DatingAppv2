@@ -24,4 +24,11 @@ export class AuthService {
     const token = this.jwt.sign({ sub: user.id, role: user.role, email: user.email });
     return { token, user };
   }
+
+  demoUsers() {
+    return this.prisma.user.findMany({
+      where: { email: { in: ['admin@luxwatch.com', 'seller@luxwatch.com', 'buyer@luxwatch.com'] } },
+      select: { id: true, name: true, email: true, role: true },
+    });
+  }
 }

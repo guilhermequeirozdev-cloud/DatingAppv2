@@ -19,6 +19,11 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
   const [content, setContent] = useState('');
 
   useEffect(() => {
+    fetch(`${API_URL}/chat/${params.orderId}`)
+      .then((res) => res.json())
+      .then(setMessages)
+      .catch(() => null);
+
     const client = io(API_URL);
     client.emit('join', { orderId: params.orderId });
     client.on('message', (message: Message) => {
@@ -39,10 +44,10 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
   return (
     <PageShell>
       <Card>
-        <h1 className="text-2xl font-semibold">Chat da negociação</h1>
-        <div className="mt-6 flex h-72 flex-col gap-3 overflow-y-auto rounded-xl border border-border-soft p-4">
+        <h1 className="text-2xl font-semibold">Chat com o vendedor</h1>
+        <div className="mt-6 flex h-72 flex-col gap-3 overflow-y-auto rounded-xl border border-border-soft bg-bg-card/60 p-4">
           {messages.map((message, index) => (
-            <div key={message.id ?? index} className="rounded-xl bg-bg-card/80 px-4 py-2">
+            <div key={message.id ?? index} className="rounded-xl bg-bg-glass px-4 py-2">
               <p className="text-xs text-text-muted">{message.senderId}</p>
               <p>{message.content}</p>
             </div>
@@ -54,7 +59,7 @@ export default function ChatPage({ params }: { params: { orderId: string } }) {
             className="flex-1 rounded-full border border-border-soft bg-bg-card px-4 py-2"
             value={content}
             onChange={(event) => setContent(event.target.value)}
-            placeholder="Digite sua mensagem"
+            placeholder="Digite uma mensagem"
           />
           <PrimaryButton onClick={sendMessage}>Enviar</PrimaryButton>
         </div>

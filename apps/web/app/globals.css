@@ -5,24 +5,28 @@
 :root {
   --bg-main: #0b0b0f;
   --bg-card: #14141a;
+  --bg-glass: rgba(20, 20, 26, 0.75);
   --gold: #c9a24d;
-  --text-muted: #b3b3c2;
+  --gold-soft: rgba(201, 162, 77, 0.35);
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
   --border-soft: rgba(255, 255, 255, 0.08);
-  --radius-xl: 20px;
+  --radius-xl: 18px;
+  --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.45);
 }
 
 body {
   background: var(--bg-main);
-  color: white;
+  color: var(--text-main);
   font-family: 'Inter', 'SF Pro Text', system-ui, sans-serif;
 }
 
 .glass {
-  background: rgba(20, 20, 26, 0.72);
+  background: var(--bg-glass);
   border: 1px solid var(--border-soft);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-xl);
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-soft);
 }
 
 .btn-primary {
